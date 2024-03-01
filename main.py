@@ -1,15 +1,15 @@
 import pygad
 
-from graphs_read import read_graph, plot_graph, find_max_from_dictionary
+from graphs_read import read_graph, plot_graph, find_num_of_nodes
 
-graph = read_graph(".\\Graphs\\queen6_6.col")
+graph = read_graph(".\\Graphs\\myciel3.col")
 used_colors = {}
 bad_edges = {}
 
 # definiujemy parametry chromosomu
 # geny to liczby: 0 lub 1
 print(graph)
-numOfGenes = int(find_max_from_dictionary(graph))
+numOfGenes = int(find_num_of_nodes(graph))
 gene_space = range(1, numOfGenes)
 
 
@@ -66,22 +66,20 @@ def calculate_heuristic_bonus(solution, graph):
 sol_per_pop = 200
 num_genes = numOfGenes
 
-# ile wylaniamy rodzicow do "rozmanazania" (okolo 50% populacji)
+# ile wylaniamy rodzicow do krzyżowania (okolo 50% populacji)
 # ile pokolen
 # ilu rodzicow zachowac (kilka procent)
 num_parents_mating = 100
 num_generations = 10000
 keep_parents = 10
 
-# jaki typ selekcji rodzicow?
 # sss = steady, rws=roulette, rank = rankingowa, tournament = turniejowa
 parent_selection_type = "rws"
 
-# w il =u punktach robic krzyzowanie?
+# rodzaj krzyżowania
 crossover_type = "two_points"
 
 # mutacja ma dzialac na ilu procent genow?
-# trzeba pamietac ile genow ma chromosom
 mutation_type = "random"
 mutation_percent_genes = 10
 
@@ -98,7 +96,6 @@ ga_instance = pygad.GA(gene_space=gene_space,
                        mutation_type=mutation_type,
                        mutation_percent_genes=mutation_percent_genes)
 
-# uruchomienie algorytmu
 ga_instance.run()
 
 # podsumowanie: najlepsze znalezione rozwiazanie (chromosom+ocena)

@@ -35,7 +35,7 @@ def plot_graph(data, title="Wykres danych", label_x="Oś X", label_y="Oś Y"):
     plt.show()
 
 
-def find_max_from_dictionary(dictionary):
+def find_num_of_nodes(dictionary):
     max_value = 0
     for key in dictionary:
         if np.max(dictionary[key]) > max_value:
