@@ -1,5 +1,6 @@
 import random
 
+
 def mutate(offspring, percent, genes):
     mutated_offspring = []
 

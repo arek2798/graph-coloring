@@ -1,8 +1,9 @@
 import random
 from graphs_read import read_graph, find_num_of_nodes
-from selection import select
-from crossover import crossover
+from selection import select, roulette_wheel_selection, rank_selection_type, tournament_selection_type
+from crossover import crossover, one_point_crossover_type, two_point_crossover_type
 from mutation import mutate
+from console_progressbar import ProgressBar
 
 # Graph loading
 graph = read_graph(".\\Graphs\\myciel6.col")
@@ -11,10 +12,11 @@ graph = read_graph(".\\Graphs\\myciel6.col")
 POPULATION_SIZE = 200
 CHROMOSOME_SIZE = find_num_of_nodes(graph)
 GENES = range(1, CHROMOSOME_SIZE)
-NUM_GENERATIONS = 10000
+NUM_GENERATIONS = 100000
 NUM_PARENTS_MATING = 40
 MUTATION_PERCENT = 10
 
+pb = ProgressBar(total=NUM_GENERATIONS, prefix='', suffix='', decimals=3, length=50, fill='*', zfill='-')
 
 def initialize_population():
     population = list()
@@ -63,48 +65,35 @@ def calculate_heuristic_bonus(solution, graph):
 # MAIN
 initial_population = initialize_population()
 population = []
-generation = 1
+generation = 0
 
 for _ in range(len(initial_population)):
     population.append(calculate_fitness(initial_population[_]))
 
-while generation <= NUM_GENERATIONS:
-    # print("population size: {selected}".format(
-    #     selected=len(population)))
-    selected = select(population, NUM_PARENTS_MATING)
+while generation < NUM_GENERATIONS:
+    selected = select(population, NUM_PARENTS_MATING, tournament_selection_type)
 
-    offspring = crossover(selected, CHROMOSOME_SIZE)
-    # print("offspring: {offspring}".format(offspring=len(offspring)))
+    offspring = crossover(selected, CHROMOSOME_SIZE, two_point_crossover_type)
 
     mutated = mutate(offspring, MUTATION_PERCENT, GENES)
-    # print("mutated: {selected}".format(selected=len(mutated)))
 
     new_population = []
     for child in mutated:
         new_population.append(calculate_fitness(child))
 
-    # print("new_population: {selected}".format(selected=len(new_population)))
-    # print("new_population: {selected}".format(selected=new_population))
-    # print("POPULATION_SIZE-len(new_population): {selected}".format(selected=POPULATION_SIZE-len(new_population)))
-    # print("POPULATION_SIZE-len(new_population): {selected}".format(selected=population[0:(POPULATION_SIZE-len(new_population))]))
-    # print("population size: {selected}".format(
-    #     selected=len(population)))
     population = new_population + population[:POPULATION_SIZE-len(new_population)]
-    # print("population: {selected}".format(selected=population))
     population = sorted(population, key=lambda x: -x[1])
 
-    # print("Population: {population}".format(population=population))
-    # print("Selected: {selected}".format(selected=selected))
-    # print("Size: {size}".format(size=len(population)))
     colors = len(list(set(population[0][0])))
     if colors == 1:
         break
 
-    print("Colors: {colors}".format(colors=colors))
-    # print("Population: {colors}".format(colors=population))
     generation += 1
-    print(generation)
+    pb.print_progress_bar(generation)
 
 
-print("Colors: {colors}".format(colors=len(list(set(population[0][0])))))
+print("\nColors: {colors}".format(colors=len(list(set(population[0][0])))))
 print("Solution: {colors}".format(colors=population[0][0]))
+
+conflicts = count_greedy_conflicts(population[0][0], graph)
+print("conflicts: {conflicts}".format(conflicts=conflicts))
