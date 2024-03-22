@@ -17,7 +17,7 @@ def read_graph(file_name):
                         else:
                             graph[int(vertex1)] = [int(vertex2)]
 
-        print("Data loaded.")
+        print(f"Graph {file_name} loaded.")
         return graph
     except FileNotFoundError:
         print(f"File {file_name} does not exist.")

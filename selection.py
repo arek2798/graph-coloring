@@ -65,7 +65,7 @@ def rank_selection(population):
     for probability in probabilities[1:]:
         cumulative_probability.append(round(probability+cumulative_probability[-1], 10))
 
-    drawn_number = round(uniform(0, 1), 10)
+    drawn_number = round(uniform(0, 100), 10)
     for rank, probability in enumerate(cumulative_probability):
         if drawn_number <= probability:
             return population[rank], rank

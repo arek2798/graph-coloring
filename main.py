@@ -1,46 +1,36 @@
-import pygad
-
-from graphs_read import read_graph, plot_graph, find_num_of_nodes
-
-graph = read_graph(".\\Graphs\\myciel3.col")
-used_colors = {}
-bad_edges = {}
-
-# definiujemy parametry chromosomu
-# geny to liczby: 0 lub 1
-print(graph)
-numOfGenes = int(find_num_of_nodes(graph))
-gene_space = range(1, numOfGenes)
+import random
+import os
+from graphs_read import read_graph, find_num_of_nodes, plot_graph
+from selection import select, roulette_wheel_selection_type, rank_selection_type, tournament_selection_type
+from crossover import crossover, one_point_crossover_type, two_point_crossover_type
+from mutation import mutate
+from console_progressbar import ProgressBar
 
 
-def fitness_func(ga_instance, solution, solution_idx):
-    print("generations_completed", ga_instance.generations_completed)
+def initialize_population(population_size, chromosome_size, genes):
+    init_population = list()
 
-    # conflicts = count_greedy_conflicts(solution, graph)
-    # if solution_idx in bad_edges:
-    #     bad_edges[solution_idx].append(conflicts)
-    # else:
-    #     bad_edges[solution_idx] = [conflicts]
-    #
-    # color_usage = len(set(solution))
-    # if solution_idx in used_colors:
-    #     used_colors[solution_idx].append(color_usage)
-    # else:
-    #     used_colors[solution_idx] = [color_usage]
-    #
-    # return 1 / (1 + conflicts + color_usage)
+    for _ in range(population_size):
+        chromosome = list()
+        for _ in range(chromosome_size):
+            chromosome.append(random.choice(genes))
+        init_population.append(chromosome)
 
+    return init_population
+
+
+def calculate_fitness(solution, graph):
     conflicts = count_greedy_conflicts(solution, graph)
     color_usage = len(set(solution))
     heuristic_bonus = calculate_heuristic_bonus(solution, graph)
 
-    alpha = 1  # conflicts
-    beta = 1  # used_colors
+    alpha = 15  # conflicts
+    beta = 2  # used_colors
     gamma = 0.8  # bonus
 
     fitness = 1 / (alpha * (conflicts + 1) + beta * (color_usage + 1) + gamma * heuristic_bonus)
 
-    return fitness
+    return [solution, fitness]
 
 
 def count_greedy_conflicts(solution, graph):
@@ -61,47 +51,71 @@ def calculate_heuristic_bonus(solution, graph):
     return bonus
 
 
-# ile chromsomów w populacji
-# ile genow ma chromosom
-sol_per_pop = 200
-num_genes = numOfGenes
+def main():
+    graphs = os.listdir(".\\Graphs\\")
 
-# ile wylaniamy rodzicow do krzyżowania (okolo 50% populacji)
-# ile pokolen
-# ilu rodzicow zachowac (kilka procent)
-num_parents_mating = 100
-num_generations = 10000
-keep_parents = 10
+    plots = []
+    for graphFile in graphs:
+        print("\nGraph: {graphName}".format(graphName=graphFile))
 
-# sss = steady, rws=roulette, rank = rankingowa, tournament = turniejowa
-parent_selection_type = "rws"
+        # Graph loading
+        graph = read_graph(f".\\Graphs\\{graphFile}")
 
-# rodzaj krzyżowania
-crossover_type = "two_points"
+        # Params:
+        population_size = 200
+        chromosome_size = find_num_of_nodes(graph)
+        genes = range(1, chromosome_size)
+        num_generations = 50000
+        num_parents_mating = 80
+        mutation_percent = 10
 
-# mutacja ma dzialac na ilu procent genow?
-mutation_type = "random"
-mutation_percent_genes = 10
+        pb = ProgressBar(total=num_generations, prefix='', suffix='', decimals=3, length=50, fill='*', zfill='-')
 
-# inicjacja algorytmu z powyzszymi parametrami wpisanymi w atrybuty
-ga_instance = pygad.GA(gene_space=gene_space,
-                       num_generations=num_generations,
-                       num_parents_mating=num_parents_mating,
-                       fitness_func=fitness_func,
-                       sol_per_pop=sol_per_pop,
-                       num_genes=num_genes,
-                       parent_selection_type=parent_selection_type,
-                       keep_parents=keep_parents,
-                       crossover_type=crossover_type,
-                       mutation_type=mutation_type,
-                       mutation_percent_genes=mutation_percent_genes)
+        initial_population = initialize_population(population_size, chromosome_size, genes)
+        population = []
+        generation = 0
+        best_colors_per_population = []
 
-ga_instance.run()
+        for _ in range(len(initial_population)):
+            population.append(calculate_fitness(initial_population[_], graph))
 
-# podsumowanie: najlepsze znalezione rozwiazanie (chromosom+ocena)
-solution, solution_fitness, solution_idx = ga_instance.best_solution()
-print("Colors: {colors}".format(colors=len(list(set(solution)))))
+        while generation < num_generations:
+            selected = select(population, num_parents_mating, roulette_wheel_selection_type)
 
-# ga_instance.plot_fitness()
-# plot_graph(used_colors[1], "wykorzystane kolory", "Generacja", "Liczba kolorów")
-# plot_graph(bad_edges[1], "Konflikty", "Generacja", "Konflikty")
+            offspring = crossover(selected, chromosome_size, one_point_crossover_type)
+
+            mutated = mutate(offspring, mutation_percent, genes)
+
+            new_population = []
+            for child in mutated:
+                new_population.append(calculate_fitness(child, graph))
+
+            population = new_population + population[:population_size-len(new_population)]
+            population = sorted(population, key=lambda x: -x[1])
+
+            colors = len(list(set(population[0][0])))
+            best_colors_per_population.append(colors)
+            if colors == 1:
+                break
+
+            generation += 1
+            pb.print_progress_bar(generation)
+
+        print("\nColors: {colors}".format(colors=len(list(set(population[0][0])))))
+        print("Best solution: {solution}".format(solution=population[0][0]))
+
+        conflicts = count_greedy_conflicts(population[0][0], graph)
+        print("Color conflicts: {conflicts}".format(conflicts=conflicts))
+
+        plots.append([graphFile, best_colors_per_population])
+
+        # plot_graph(best_colors_per_population, label_x="Generacja", label_y="Liczba kolorów", title="Najmniejsza liczba kolorów w stosunku do generacji")
+
+    for graph in plots:
+        print(graph[0])
+        plot_graph(graph[1], label_x="Generacja", label_y="Liczba kolorów",
+               title="Najmniejsza liczba kolorów w stosunku do generacji")
+
+
+if __name__ == '__main__':
+    main()

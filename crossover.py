@@ -4,6 +4,7 @@ import random
 one_point_crossover_type = "ONE_POINT_CROSSOVER"
 two_point_crossover_type = "TWO_POINT_CROSSOVER"
 
+
 def crossover(chromosomes, chromosome_size, crossover_type):
     chromosomes = sorted(chromosomes, key=lambda x: -x[1])
 
@@ -14,7 +15,7 @@ def crossover(chromosomes, chromosome_size, crossover_type):
         parent2 = chromosomes[2*i+1][0]
 
         if crossover_type == one_point_crossover_type:
-            child = one_point_crossover_type(parent1, parent2, chromosome_size)
+            child = one_point_crossover(parent1, parent2, chromosome_size)
         else:
             child = two_point_crossover(parent1, parent2, chromosome_size)
 
