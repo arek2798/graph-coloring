@@ -27,11 +27,15 @@ def read_graph(file_name):
         return None
 
 
-def plot_graph(data, title="Wykres danych", label_x="Oś X", label_y="Oś Y"):
+def plot_graph(data, title="Wykres danych", label_x="Oś X", label_y="Oś Y", save=True, file_name="graph.png"):
     plt.plot(data)
     plt.title(title)
     plt.xlabel(label_x)
     plt.ylabel(label_y)
+
+    if save:
+        plt.savefig(file_name)
+
     plt.show()
 
 

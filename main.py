@@ -1,10 +1,12 @@
 import random
 import os
+import time
 from graphs_read import read_graph, find_num_of_nodes, plot_graph
 from selection import select, roulette_wheel_selection_type, rank_selection_type, tournament_selection_type
 from crossover import crossover, one_point_crossover_type, two_point_crossover_type
 from mutation import mutate
 from console_progressbar import ProgressBar
+from prettytable import PrettyTable
 
 
 def initialize_population(population_size, chromosome_size, genes):
@@ -65,7 +67,7 @@ def main():
         population_size = 200
         chromosome_size = find_num_of_nodes(graph)
         genes = range(1, chromosome_size)
-        num_generations = 50000
+        num_generations = 100
         num_parents_mating = 80
         mutation_percent = 10
 
@@ -75,6 +77,7 @@ def main():
         population = []
         generation = 0
         best_colors_per_population = []
+        start_time = time.time()
 
         for _ in range(len(initial_population)):
             population.append(calculate_fitness(initial_population[_], graph))
@@ -101,21 +104,27 @@ def main():
             generation += 1
             pb.print_progress_bar(generation)
 
-        print("\nColors: {colors}".format(colors=len(list(set(population[0][0])))))
+        end_time = time.time()
+        colors = len(list(set(population[0][0])))
+        print("\nColors: {colors}".format(colors=colors))
         print("Best solution: {solution}".format(solution=population[0][0]))
 
         conflicts = count_greedy_conflicts(population[0][0], graph)
         print("Color conflicts: {conflicts}".format(conflicts=conflicts))
 
-        plots.append([graphFile, best_colors_per_population])
+        exec_time = end_time - start_time
 
-        # plot_graph(best_colors_per_population, label_x="Generacja", label_y="Liczba kolorów", title="Najmniejsza liczba kolorów w stosunku do generacji")
+        plots.append([graphFile, best_colors_per_population, conflicts, colors, exec_time])
 
+    table = PrettyTable()
+    table.field_names = ["Graph name", "Colors", "Conflicts", "Time (s)"]
     for graph in plots:
-        print(graph[0])
-        plot_graph(graph[1], label_x="Generacja", label_y="Liczba kolorów",
-               title="Najmniejsza liczba kolorów w stosunku do generacji")
+        table.add_row([graph[0], graph[3], graph[2], graph[4]])
 
+        plot_graph(graph[1], label_x="Generacja", label_y="Liczba kolorów",
+               title="Najmniejsza liczba kolorów w stosunku do generacji", file_name=f".\\plots\\graph_{graph[0]}.png")
+
+    print(table)
 
 if __name__ == '__main__':
     main()
