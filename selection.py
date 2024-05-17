@@ -14,12 +14,12 @@ def select(population, target, selection_type):
     population_copy = population.copy()
 
     for _ in range(target):
-        if selection_type == roulette_wheel_selection:
-            selected, index = roulette_wheel_selection(population_copy)
-        elif selection_type == tournament_selection_type:
-            selected, index = tournament_selection(population_copy)
-        else:
-            selected, index = rank_selection(population_copy)
+        # if selection_type == roulette_wheel_selection:
+        selected, index = roulette_wheel_selection(population_copy)
+        # elif selection_type == tournament_selection_type:
+        # selected, index = tournament_selection(population_copy)
+        # else:
+        # selected, index = rank_selection(population_copy)
 
         selected_chromosomes.append(selected)
 

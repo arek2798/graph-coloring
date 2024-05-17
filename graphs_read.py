@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 
 def read_graph(file_name):
@@ -27,16 +28,23 @@ def read_graph(file_name):
         return None
 
 
-def plot_graph(data, title="Wykres danych", label_x="Oś X", label_y="Oś Y", save=True, file_name="graph.png"):
-    plt.plot(data)
+def plot_graph(data, title="Wykres danych", label_x="Oś X", label_y="Oś Y", save=True, dir="", file_name="graph.png"):
+    plt.plot(data[0], color='g', label='colors')
+    plt.plot(data[1], color='r', label='conflicts')
+
     plt.title(title)
     plt.xlabel(label_x)
     plt.ylabel(label_y)
+    plt.legend()
 
     if save:
-        plt.savefig(file_name)
+        if not os.path.isdir(dir):
+            os.makedirs(dir)
 
-    plt.show()
+        plt.savefig(dir+file_name)
+
+    # plt.show()
+    plt.clf()
 
 
 def find_num_of_nodes(dictionary):

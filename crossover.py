@@ -14,21 +14,34 @@ def crossover(chromosomes, chromosome_size, crossover_type):
         parent1 = chromosomes[2*i][0]
         parent2 = chromosomes[2*i+1][0]
 
-        if crossover_type == one_point_crossover_type:
-            child = one_point_crossover(parent1, parent2, chromosome_size)
-        else:
-            child = two_point_crossover(parent1, parent2, chromosome_size)
+        childs = one_point_crossover(parent1, parent2, chromosome_size)
+        # child = two_point_crossover(parent1, parent2, chromosome_size)
+        # print(child)
+        # if crossover_type == one_point_crossover_type:
+        #     child = one_point_crossover(parent1, parent2, chromosome_size)
+        # else:
+        #     child = two_point_crossover(parent1, parent2, chromosome_size)
 
-        offspring.extend([child])
+        offspring.extend(childs)
 
     return offspring
 
 
 def one_point_crossover(parent1, parent2, chromosome_size):
-    crossover_point = random.randint(1, chromosome_size - 1)
-    child = parent1[:crossover_point] + parent2[crossover_point:]
+    crossover_point = random.randint(1, chromosome_size)
+    # child = parent1[:crossover_point] + parent2[crossover_point:]
+    # child = list(parent1.items())[:crossover_point] + list(parent2.items())[crossover_point:]
+    child1 = {}
+    child2 = {}
+    for vertex in range(chromosome_size):
+        if vertex < crossover_point:
+            child1[vertex+1] = parent1.get(vertex+1)
+            child2[vertex+1] = parent2.get(vertex+1)
+        else:
+            child1[vertex+1] = parent2.get(vertex+1)
+            child2[vertex+1] = parent1.get(vertex + 1)
 
-    return child
+    return [child1, child2]
 
 
 def two_point_crossover(parent1, parent2, chromosome_size):
