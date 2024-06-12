@@ -5,43 +5,20 @@ rank_selection_type = "RANK_SELECTION"
 tournament_selection_type = "TOURNAMENT_SELECTION"
 
 
-def select(population, target, selection_type):
-    if target >= len(population):
-        return population
-
-    selected_chromosomes = []
-
-    population_copy = population.copy()
-
-    for _ in range(target):
-        # if selection_type == roulette_wheel_selection:
-        selected, index = roulette_wheel_selection(population_copy)
-        # elif selection_type == tournament_selection_type:
-        # selected, index = tournament_selection(population_copy)
-        # else:
-        # selected, index = rank_selection(population_copy)
-
-        selected_chromosomes.append(selected)
-
-        del population_copy[index]
-
-    return selected_chromosomes
-
-
 def roulette_wheel_selection(population):
-    total_fitness = sum(chromosome[1] for chromosome in population)
-    probabilities = [round(chromosome[1]/total_fitness, 10) for chromosome in population]
+    total_fitness = sum(chromosome.fitness for chromosome in population)
+    probabilities = [round(chromosome.fitness / total_fitness, 10) for chromosome in population]
 
     cumulative_probability = [probabilities[0]]
     for probability in probabilities[1:]:
-        cumulative_probability.append(round(probability+cumulative_probability[-1], 10))
+        cumulative_probability.append(round(probability + cumulative_probability[-1], 10))
 
     drawn_number = round(uniform(0, 1), 10)
     for rank, probability in enumerate(cumulative_probability):
         if drawn_number <= probability:
-            return population[rank], rank
+            return population[rank]
 
-    return population[-1], len(population)-1
+    return population[-1]
 
 
 def tournament_selection(population):
@@ -51,14 +28,14 @@ def tournament_selection(population):
     while second == first:
         second = randint(0, len(population) - 1)
 
-    if population[first][1] > population[second][1]:
-        return population[first], first
+    if population[first].fitness > population[second].fitness:
+        return population[first]
 
-    return population[second], second
+    return population[second]
 
 
 def rank_selection(population):
-    population = sorted(population, key=lambda x: x[1])
+    population = sorted(population, key=lambda chromosome: chromosome.fitness)
     probabilities = calculate_probabilities(population)
 
     cumulative_probability = [probabilities[0]]
@@ -68,9 +45,9 @@ def rank_selection(population):
     drawn_number = round(uniform(0, 100), 10)
     for rank, probability in enumerate(cumulative_probability):
         if drawn_number <= probability:
-            return population[rank], rank
+            return population[rank]
 
-    return population[-1], len(population) - 1
+    return population[-1]
 
 
 def calculate_probabilities(population):
@@ -78,7 +55,7 @@ def calculate_probabilities(population):
 
     probability_per_rank = calculate_probability_per_rank(population)
 
-    for rank, chromosome in enumerate(population):
+    for rank, _ in enumerate(population):
         probabilities.append(round((rank + 1) * probability_per_rank, 10))
 
     return probabilities

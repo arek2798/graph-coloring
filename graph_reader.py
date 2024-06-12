@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import numpy as np
 import os
 
 
@@ -43,14 +42,4 @@ def plot_graph(data, title="Wykres danych", label_x="Oś X", label_y="Oś Y", sa
 
         plt.savefig(dir+file_name)
 
-    # plt.show()
     plt.clf()
-
-
-def find_num_of_nodes(dictionary):
-    max_value = 0
-    for key in dictionary:
-        if np.max(dictionary[key]) > max_value:
-            max_value = np.max(dictionary[key])
-
-    return max_value

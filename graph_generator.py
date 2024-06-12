@@ -3,15 +3,16 @@ import random
 
 
 def generate_graph(num_vertices, density):
-    # Tworzenie pustego grafu
     graph = nx.Graph()
 
     # Dodawanie wierzchołków
     graph.add_nodes_from(range(1, num_vertices + 1))
+    edges = 0
 
     # Dodawanie krawędzi zgodnie z określoną gęstością
     for i in range(1, num_vertices + 1):
         for j in range(i + 1, num_vertices + 1):
+            edges += 1
             if random.random() < density:
                 graph.add_edge(i, j)
 
